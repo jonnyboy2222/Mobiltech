@@ -1,0 +1,13 @@
+experiment:
+  name: dist_baseline
+  output_csv: outputs/metrics/dist_baseline.csv
+
+data:
+  root_dir: data/SLPCCD
+  split: val
+
+method:
+  voxel_size: 0.25
+  radius: 1
+  tau_removed: 0.4
+  tau_added: 0.4

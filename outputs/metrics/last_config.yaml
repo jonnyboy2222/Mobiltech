@@ -1,0 +1,12 @@
+data:
+  root_dir: data/SLPCCD
+  split: val
+experiment:
+  name: geo_stat
+method:
+  eps: 1.0e-06
+  min_var: 0.01
+  radius: 1
+  tau_added: 20
+  tau_removed: 20
+  voxel_size: 0.3
