@@ -1,0 +1,107 @@
+# ============================================================
+# v3 Bayesian LR - Recommended Config
+# Voxel-conditioned Bayesian 3D Change Detection
+# ============================================================
+
+dataset:
+  root_dir: data/SLPCCD
+  train_split: train
+  val_split: val
+  test_split: test
+
+
+model:
+  # ----------------------------------------------------------
+  # Core model
+  # ----------------------------------------------------------
+  mode: separate_np                  # H0/H1 energy 기반 Bayesian log-odds
+  evidence_type: geometry_only       # 현재는 geometry/RGB evidence 중심
+
+  # ----------------------------------------------------------
+  # Input
+  # ----------------------------------------------------------
+  use_rgb: true                      # RGB evidence 사용
+  normalize_xyz: true                # KNN evidence 계산 전 ref/query 좌표 정규화
+
+  # ----------------------------------------------------------
+  # Geometry evidence
+  # ----------------------------------------------------------
+  geo_k_neighbors: 8                # support/structure evidence 안정화를 위해 16 추천
+  geo_backend: cpu_kdtree
+  geo_source_chunk_size: 8192
+
+  geo_use_axis_evidence: false        # residual 방향성 evidence
+  geo_use_support_evidence: false     # KNN 거리분포/support evidence
+  geo_use_structure_evidence: false   # local surface structure evidence
+
+  # ----------------------------------------------------------
+  # Direction conditioning
+  # ----------------------------------------------------------
+  share_change_head: true            # removed/added head 공유
+  use_direction_token: true          # 방향 조건 추가
+  direction_token_type: onehot       # removed=[1,0], added=[0,1]
+
+  # ----------------------------------------------------------
+  # Voxel latent evidence
+  # ----------------------------------------------------------
+  use_voxel_evidence: true           # point evidence -> voxel latent evidence
+  voxel_size: 0.2                    # metric xyz 기준 voxel size
+  voxel_origin_mode: zero            # fixed origin 사용
+
+  # 현재 voxel_evidence.py base: mean + std + log_count
+  voxel_use_mean: true 
+  voxel_use_std: true 
+  voxel_use_max: true #
+  voxel_use_min: false
+  voxel_use_count: true 
+
+  # ----------------------------------------------------------
+  # Evidence encoder
+  # ----------------------------------------------------------
+  use_evidence_encoder: true
+  evidence_hidden_dim: 128
+  evidence_latent_dim: 128
+
+  # ----------------------------------------------------------
+  # Bayesian head
+  # ----------------------------------------------------------
+  head_hidden_dim: 64
+  prior_logit: 0.0
+  dropout: 0.1
+
+  # ----------------------------------------------------------
+  # Compatibility options for feature_diff branch
+  # geometry_only에서는 사용되지 않음
+  # ----------------------------------------------------------
+  hidden_dim: 64
+  feature_dim: 64
+  k_neighbors: 8
+  nfd_chunk_size: 512
+
+
+train:
+  batch_size: 1
+  epochs: 100
+  lr: 0.001
+  weight_decay: 0.0001
+
+  use_amp: false
+
+  pos_weight: null
+
+  lambda_energy: 0.01
+  lambda_margin: 0.1
+  margin: 1.0
+
+
+inference:
+  tau_removed: 0.5
+  tau_added: 0.5
+
+  use_amp: false
+
+
+output:
+  checkpoint_dir: outputs/checkpoints/v3_bayesian_lr
+  result_dir: outputs/results/v3_bayesian_lr
+  vis_dir: outputs/vis/v3_bayesian_lr
